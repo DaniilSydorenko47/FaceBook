@@ -1,47 +1,55 @@
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class Main {
     public static void main(String[] args) throws IOException{
 
-        Memory memory = new Memory();
-
-
-        ServerSocket serverSocket = new ServerSocket(memory.getPort());
+        ServerSocket serverSocket = new ServerSocket(8345);
+        ExecutorService pool = Executors.newCachedThreadPool();
 
         while (true) {
             try {
                 Socket socket = serverSocket.accept();
                 System.out.println("Accept");
-                //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
+                pool.submit(() -> handleClient(socket));
 
-                User user = (User)in.readObject();
-                boolean checkUser = memory.checkUser(user);
-                if (checkUser){
-                    System.out.println("User already exists");
-                } else {
-                    memory.add(user);
-                }
-                memory.print();
 
-//                User user = (User) in.readObject();
-//                boolean checkUser = memory.checkUser(user);
-//                if (checkUser){
-//                    System.out.println("User already exists");
-//                } else{
-//                    memory.add(user);
-//                }
-
-//                in.close();
-//                socket.close();
-//                serverSocket.close();
 
             }catch (Exception e){
                 e.getMessage();
             }
 
+        }
+    }
+    public static void handleClient(Socket socket) {
+        try (ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
+             PrintWriter pw = new PrintWriter(socket.getOutputStream(), true)) {
+            Memory memory = new Memory();
+
+            User user = (User) in.readObject();
+            System.out.println("Получен пользователь: " + user);
+
+
+            // проверка пользователя
+            boolean exists = memory.checkUser(user);// пример проверки
+            String message;
+            if(exists){
+                message = "User already exists";
+                memory.add(user);
+            } else{
+                message="User added";
+            }
+
+
+            // Отправляем ответ
+            pw.println(message);
+            pw.flush();
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }
