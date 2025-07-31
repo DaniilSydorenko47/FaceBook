@@ -1,6 +1,9 @@
+import org.w3c.dom.ls.LSOutput;
+
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -9,6 +12,7 @@ public class Main {
 
         ServerSocket serverSocket = new ServerSocket(8345);
         ExecutorService pool = Executors.newCachedThreadPool();
+
 
         while (true) {
             try {
@@ -26,11 +30,15 @@ public class Main {
     }
     public static void handleClient(Socket socket) {
         try (ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
-             PrintWriter pw = new PrintWriter(socket.getOutputStream(), true)) {
-            Memory memory = new Memory();
+             ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
 
+             ) {
+            Memory memory = new Memory();
+            //Получение пользователя
             User user = (User) in.readObject();
+
             System.out.println("Получен пользователь: " + user);
+            //Чтение выбора
 
 
             // проверка пользователя
@@ -38,15 +46,15 @@ public class Main {
             String message;
             if(exists){
                 message = "User already exists";
-                memory.add(user);
             } else{
                 message="User added";
+                memory.add(user);
             }
-
-
+            memory.print();
             // Отправляем ответ
-            pw.println(message);
-            pw.flush();
+            out.writeObject(message);
+            out.flush();
+
 
         } catch (Exception e) {
             e.printStackTrace();
