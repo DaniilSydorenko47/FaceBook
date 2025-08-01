@@ -36,20 +36,36 @@ public class Main {
             Memory memory = new Memory();
             //Получение пользователя
             User user = (User) in.readObject();
+            Integer choice = (Integer)in.readObject();
 
             System.out.println("Получен пользователь: " + user);
-            //Чтение выбора
-
-
-            // проверка пользователя
+            String message = null;
             boolean exists = memory.checkUser(user);// пример проверки
-            String message;
-            if(exists){
-                message = "User already exists";
-            } else{
-                message="User added";
-                memory.add(user);
+            switch (choice){
+                case 1:
+
+                    if(exists){
+                        message = "User already exists";
+                    } else{
+                        message="User added";
+                        memory.add(user);
+                    }
+                    break;
+                case 2:
+                    if(exists){
+                        message = "Welcome";
+                    } else{
+                        message="Incorrect login or password";
+                    }
+                    break;
+                default:
+                    message="Incorrect choice";
+                    break;
             }
+
+
+
+
             memory.print();
             // Отправляем ответ
             out.writeObject(message);

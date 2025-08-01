@@ -28,7 +28,7 @@ public class Client {
 
         ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
         ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
-        //BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+
 
         switch (choice){
             case 1:
@@ -41,7 +41,8 @@ public class Client {
                         out.writeObject(user);
                         out.flush();
                         //Отправка выбора
-
+                        out.writeObject(choice);
+                        out.flush();
                         //Получение
                         String line = (String) in.readObject();
                         System.out.println("Ответ сервера: " + line);
@@ -60,25 +61,35 @@ public class Client {
 
                 break;
             case 2:
-//                User user1 = new User(login,password);
-//                out.writeObject(user1);
-//                out.flush();
-//                CompletableFuture.runAsync(() -> {
-//                    try {
-//                        String line;
-//                        while ((line = br.readLine()) != null) {
-//                            System.out.println("Выбор клиента " + line);
-//                        }
-//                    } catch (IOException e) {
-//                        e.printStackTrace();
-//                    }
-//                });
-//                try {
-//                Thread.sleep(3000);
-//            } catch (InterruptedException e) {
-//                throw new RuntimeException(e);
-//            }
+                User user1 = new User(login,password);
+
+                CompletableFuture.runAsync(() -> {
+                    try {
+                        //Отправка обьекта
+                        out.writeObject(user1);
+                        out.flush();
+                        //Отправка выбора
+                        out.writeObject(choice);
+                        out.flush();
+                        //Получение
+                        String line = (String) in.readObject();
+                        System.out.println("Ответ сервера: " + line);
+
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    } catch (Exception e) {
+                        e.getMessage();
+                    }
+
+                });
+                try {
+                Thread.sleep(3000);
+            } catch (InterruptedException e) {
+               throw new RuntimeException(e);
+            }
                 break;
+            default:
+                System.out.println("Incorrect choice");
         }
 
         sc.close();
